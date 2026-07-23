@@ -16,7 +16,7 @@ def health():
 async def get_books():
     conn = psycopg2.connect("host=database dbname=bookshop user=user password=12345678")
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM catalog.books;")
+    cur.execute("SELECT * FROM catalog.books limit 10;")
     books = cur.fetchall()
     cur.close()
     conn.close()
