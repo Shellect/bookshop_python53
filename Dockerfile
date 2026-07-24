@@ -20,13 +20,18 @@ FROM base AS builder
 RUN apk add --no-cache gcc \
     musl-dev \
     postgresql-dev
-RUN poetry install --no-root --with dev
+RUN poetry install --no-root --only main --no-chache
+
+FROM builder AS dev
+RUN poetry install --no-root --with dev --no-cache
 
 FROM base AS runtime
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
-# COPY ./app .
 
 USER appuser
+
+FROM base AS production
+COPY ./app ./app
 
 
