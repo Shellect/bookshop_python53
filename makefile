@@ -1,4 +1,4 @@
-.PHONY: help package_manager seed dev build
+.PHONY: help package_manager seed dev frontend build
 
 # Переменные
 IMAGE_NAME := poetry_manage
@@ -10,10 +10,10 @@ NC := \033[0m # No Color
 
 help:
 	@echo "Available commands:"
-	@echo " make package_manager add <package name>     - Add python dependencies"
-	@echo " make package_manager add -D <package name>  - Add package as development dependencies"
-	@echo " make package_manager remove <package name>  - Remove python dependency"
-	@echo " make seed <path to seed script>             - Seed database with test data"
+	@echo " make package_manager ARGS=\"add <package name>\"     - Add python dependencies"
+	@echo " make package_manager ARGS=\"add -D <package name>\"  - Add package as development dependencies"
+	@echo " make package_manager ARGS=\"remove <package name>\"  - Remove python dependency"
+	@echo " make seed NETWORK=\"bookshop_network\" ARGS=\"<path to seed script>\" - Seed database with test data"
 	@echo " make dev      - Run development environment"
 	@echo " make frontend - Build frontend bundle"
 	@echo " make build    - Build production image"
@@ -32,7 +32,8 @@ package_manager:
 seed:
 	@echo "$(GREEN)Seeding database$(NC)"
 	docker build --target dev -t $(IMAGE_NAME):dev .
-	docker run --rm --network host \
+	docker run --rm --network $(NETWORK) \
+		--env-file ./.env \
 		-v $(PWD)/app:/app/app \
 		$(IMAGE_NAME):dev \
 		poetry run python $(ARGS)

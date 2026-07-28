@@ -19,7 +19,7 @@ if __name__ == "__main__":
         books = [(
             ' '.join(fake.words(nb=random.randint(2, 5))).title(),
             fake.name(),
-            "/img/no_img.jpeg",
+            "/img/no_img.png",
             random.randint(10000, 1000000)
             ) for _ in range(500)]
 

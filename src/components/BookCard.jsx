@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "./BookCard.module.css";
+import styles from "./BookCard.module.scss";
 
 export default function BookCard({ title, author, poster, price, setBookName }) {
     return (

@@ -2,6 +2,8 @@ services:
   web-server:
     image: nginx:stable-alpine3.23
     container_name: bookshop-web-server
+    networks:
+      - bookshop_network
     ports:
       - 8080:80
     volumes:
@@ -19,6 +21,8 @@ services:
       - ./.docker/01-bookshop.sql:/docker-entrypoint-initdb.d/01-bookshop.sql:ro
     env_file:
       - .env
+    networks:   
+      - bookshop_network
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "$POSTGRES_USER", "-d", "$POSTGRES_DB" ]
       interval: 5s
@@ -27,17 +31,24 @@ services:
       start_period: 10s
 
   backend:
-    build: .
+    build: 
+      context: .
+      target: runtime
     container_name: bookshop-backend
     volumes:
       - ./app:/app/app
     env_file:
       - ./.env
     command: "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    networks:
+      - bookshop_network
     depends_on:
       database:
         condition: service_healthy
 
 volumes:
   postgres_data:
+
+networks:
+  bookshop_network:
 
