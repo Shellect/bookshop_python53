@@ -20,7 +20,7 @@ FROM base AS builder
 RUN apk add --no-cache gcc \
     musl-dev \
     postgresql-dev
-RUN poetry install --no-root --only main --no-chache
+RUN poetry install --no-root --only main --no-cache
 
 FROM builder AS dev
 RUN poetry install --no-root --with dev --no-cache
