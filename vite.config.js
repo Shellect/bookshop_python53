@@ -13,6 +13,7 @@ export default defineConfig({
         outDir: "dist",
         emptyOutDir: true,
         copyPublicDir: true,
+        sourcemap: true,
         rolldownOptions: {
             input: {
                 main: "index.html"

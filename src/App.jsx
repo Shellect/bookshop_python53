@@ -1,12 +1,12 @@
 import React from "react";
-import BookGallery from "./components/BookGallery";
-import BookCard from "./components/BookCard";
+import {BookGallery , BookCard} from "./components/gallery";
 import { OrderForm as OrderForm } from "./components/OrderForm";
 import Nav from "./components/Nav";
 import { Route, Routes } from "react-router";
 import {Profile} from "./components/Profile";
+import { connect } from "react-redux";
 
-export default class App extends React.Component {
+class App extends React.Component {
 
     constructor(props) {
         super(props);
@@ -22,8 +22,14 @@ export default class App extends React.Component {
         this.loadBooks();
     }
 
+    componentDidUpdate(prevProps) {
+        if(prevProps.page !== this.props.page) {
+            this.loadBooks();
+        }
+    }
+
     async loadBooks() {
-        const response = await fetch('/api/books');
+        const response = await fetch('/api/books?' + new URLSearchParams({page: this.props.page}).toString());
         if (!response.ok) {
             console.log("Network error");
             return;
@@ -70,3 +76,11 @@ export default class App extends React.Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        page: state.page.value
+    }
+}
+
+export default connect(mapStateToProps)(App);
