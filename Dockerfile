@@ -31,7 +31,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 USER appuser
 
-FROM base AS production
-COPY ./app ./app
-
 
