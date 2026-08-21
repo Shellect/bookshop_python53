@@ -8,9 +8,15 @@ class Settings(BaseSettings):
     debug: bool = True
     testing: bool = True
 
+    # Redis
+    redis_host: str
+    redis_port: int = 6379
+    redis_password: str
+    redis_db: int = 0
+
     # Database
     postgres_host: str
-    postgres_port: int
+    postgres_port: int = 5432
     postgres_user: str
     postgres_password: SecretStr
     postgres_db: str
