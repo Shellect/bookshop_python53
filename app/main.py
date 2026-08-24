@@ -34,3 +34,6 @@ async def get_books(page: int = 0, db: AsyncSession = Depends(get_db)):
     )
     return books_list.all()
 
+@app.get("/favorites", response_model=List[BookResponse])
+async def get_favorite_books(current_user: User = Depends(get_current_user)):
+   return current_user.favorites

@@ -36,3 +36,8 @@ class User(Base):
           nullable=False
     )
     last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    favorites: Mapped[List["Book"]] = relationship(
+        secondary="favorites",
+        back_populates="fans",
+        lazy="selectin"
+    )
