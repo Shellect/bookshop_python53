@@ -23,7 +23,6 @@ package_manager:
 	@echo "$(GREEN)Running poetry $(ARGS)$(NC)"
 	docker build --target builder -t $(IMAGE_NAME):builder .
 	docker run --rm -it \
-		--env-file ./.env \
 		-v $(PWD)/pyproject.toml:/app/pyproject.toml \
 		-v $(PWD)/poetry.lock:/app/poetry.lock \
 		$(IMAGE_NAME):builder \
@@ -31,13 +30,10 @@ package_manager:
 
 seed:
 	@echo "$(GREEN)Seeding database$(NC)"
-	docker build --target dev -t $(IMAGE_NAME):dev .
-	docker run --rm --network $(NETWORK) \
-		--env-file ./.env \
-		-v $(PWD)/app:/app/app \
-		$(IMAGE_NAME):dev \
-		poetry run python $(ARGS)
+	FIXTURE=${FIXTURE} docker-compose --profile seed up
 
+generate_migrations:
+	COMMAND=${COMMAND} docker-compose --profile migrate up
 
 dev:
 	@echo "$(GREEN)Starting development environment$(NC)"

@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, Mapped, mapped_column
-from sqlalchemy.dialects.postgres import UUID as PG_UUID
+from sqlalchemy import DateTime, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from app.core.database import Base
 
 class Favorite(Base):
