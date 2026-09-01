@@ -19,21 +19,21 @@ class SessionService:
         self.timeout = 86400 # 24 часа
 
 
-    def create_session(self, user_id: int) -> str:
+    async def create_session(self, user_id: int) -> str:
         """
         Store session in redis and returns sesion_id
         """
         session_id = str(uuid.uuid4())
         now = datetime.utcnow().isoformat()
         session_data = {
-            "user_id" : user_id,
+            "user_id" : str(user_id),
             "created_at" : now,
             "last_activity": now
         }
 
         # Store session in redis with TTL
         key = f"session:{session_id}"
-        self.redis_client.setex(key, self.timeout, json.dumps(session_data))
+        await self.redis_client.setex(key, self.timeout, json.dumps(session_data))
 
         # Store user session
         user_key = f"user_session:{user_id}"

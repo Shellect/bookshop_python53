@@ -19,7 +19,7 @@ class UserService:
         user = User(
             email = user_data.email,
             username = user_data.login,
-            hash_password = hashed_password,
+            hashed_password = hashed_password,
         )
 
         self.database.add(user)
@@ -33,10 +33,12 @@ class UserService:
 
     async def get_by_name(self, username: str) -> Optional[User]:
         query =  select(User).where(User.username == username)
-        return await self.database.execute(query).first()
+        result = await self.database.execute(query)
+        return result.first()
 
     async def get_by_email(self, email: str) -> Optional[User]:
         query = select(User).where(User.email == email)
-        return await self.database.execute(query).first()
+        result = await self.database.execute(query)
+        return result.first()
 
 

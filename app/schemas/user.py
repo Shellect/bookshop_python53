@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict, EmailStr, model_validator
 
@@ -11,7 +12,7 @@ class UserCreateRequest(BaseModel):
 
     @model_validator(mode='after')
     def validate_password(self) -> 'CreateUserRequest':
-        if self.password != self.confirm.password:
+        if self.password != self.confirm_password:
             raise ValueError('Passwords do not match')
         return self
 
@@ -21,7 +22,7 @@ class UserLoginRequest(BaseModel):
     password: str
 
 class UserResponse(BaseModel):
-    id: int
+    id: uuid.UUID
     email: EmailStr
     username: str
     role: UserRole

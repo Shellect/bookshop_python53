@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import Request, HTTPException, status
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -10,14 +10,13 @@ from app.models.user import User
 from .session_service import SessionService
 from .user_service import UserService
 
+pwd_context = PasswordHash.recommended()
+
 
 class AuthService:
     """
     Сервис для аутентификации и управления пользователем
     """
-
-
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def __init__(self, database: AsyncSession, session_service: SessionService, user_service: UserService):
         self.database = database
@@ -25,9 +24,9 @@ class AuthService:
         self.user_service = user_service
 
 
-    def _create_session(self, request: Optional[Request], user_id: int):
+    async def _create_session(self, request: Optional[Request], user_id: int):
         if request:
-            session_id = self.session_service.create_session(user_id)
+            session_id = await self.session_service.create_session(user_id)
             request.state.new_session_id = session_id
             request.state.user_id = user_id
             request.state.is_authenticated = True
@@ -38,13 +37,13 @@ class AuthService:
 
 
     def hash_password(self, password) -> str:
-        pwd_context.hash(password)
+        return pwd_context.hash(password)
 
 
     async def create_user(self, user_data: UserCreateRequest, request: Optional[Request] = None) -> User:
         hashed_password = self.hash_password(user_data.password)
         user = await self.user_service.create(user_data, hashed_password)
-        self._create_session(request, user.id)
+        await self._create_session(request, user.id)
         return user
 
 
@@ -56,7 +55,7 @@ class AuthService:
         user.last_login = datetime.utcnow()
         self.db.commit()
 
-        self._create_session(request, user.id)
+        await self._create_session(request, user.id)
 
         return user
 

@@ -1,6 +1,7 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.core.config import settings
 from app.services.session_service import SessionService
 
 
@@ -35,7 +36,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
                 httponly=True,
                 secure = not settings.testing,
                 samesite = "lax",
-                max_age= session_service.timeout
+                max_age= self.session_service.timeout
             )
 
         return response

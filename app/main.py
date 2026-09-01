@@ -13,7 +13,7 @@ from app.routers import auth
 from app.schemas.book import BookResponse
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, session_service=get_session_service)
+app.add_middleware(SessionMiddleware, session_service=get_session_service())
 app.include_router(auth.router)
 
 @app.get("/")
