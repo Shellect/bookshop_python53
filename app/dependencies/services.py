@@ -31,10 +31,9 @@ def get_user_service(
 
 
 def get_auth_service(
-    database: AsyncSession = Depends(get_db),
     session_service: SessionService = Depends(get_session_service),
     user_service: UserService = Depends(get_user_service)
 ) -> AuthService:
-    return AuthService(database, session_service, user_service)
+    return AuthService(session_service, user_service)
 
 

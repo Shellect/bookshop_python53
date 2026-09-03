@@ -11,7 +11,7 @@ class UserCreateRequest(BaseModel):
     confirm_password: str
 
     @model_validator(mode='after')
-    def validate_password(self) -> 'CreateUserRequest':
+    def validate_password(self) -> 'UserCreateRequest':
         if self.password != self.confirm_password:
             raise ValueError('Passwords do not match')
         return self
