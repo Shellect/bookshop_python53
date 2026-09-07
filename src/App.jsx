@@ -1,10 +1,12 @@
 import React from "react";
-import {BookGallery , BookCard} from "./components/gallery";
-import { OrderForm as OrderForm } from "./components/OrderForm";
+import {BookGallery, BookCard} from "./components/gallery";
+import {OrderForm as OrderForm} from "./components/OrderForm";
 import Nav from "./components/Nav";
-import { Route, Routes } from "react-router";
-import {Profile} from "./components/Profile";
-import { connect } from "react-redux";
+import {Route, Routes} from "react-router";
+import {Profile} from "./pages/profile/Profile";
+import {connect} from "react-redux";
+import {Registration} from "./pages/Registration.jsx";
+import {Login} from "./pages/Login.jsx";
 
 class App extends React.Component {
 
@@ -23,7 +25,7 @@ class App extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if(prevProps.page !== this.props.page) {
+        if (prevProps.page !== this.props.page) {
             this.loadBooks();
         }
     }
@@ -39,13 +41,13 @@ class App extends React.Component {
     }
 
     setBookName(bookName) {
-        this.setState({ bookName, quantity: this.state.quantity + 1 });
+        this.setState({bookName, quantity: this.state.quantity + 1});
     }
 
     render() {
         return (
             <>
-                <Nav />
+                <Nav/>
                 <div className="container">
                     <div className="row mt-3">
                         <div className="col-12">
@@ -61,13 +63,13 @@ class App extends React.Component {
                                             setBookName={this.setBookName}
                                         />)}
                                     </BookGallery>
-                                } />
-                                <Route path="/profile" element={
-                                    <Profile />
-                                } />
+                                }/>
+                                <Route path="/profile" element={<Profile/>}/>
                                 <Route path="/cart" element={
-                                    <OrderForm bookName={this.state.bookName} quantity={this.state.quantity} />
-                                } />
+                                    <OrderForm bookName={this.state.bookName} quantity={this.state.quantity}/>
+                                }/>
+                                <Route path="/registration" element={<Registration />}/>
+                                <Route path="/login" element={<Login />}/>
                             </Routes>
                         </div>
                     </div>

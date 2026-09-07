@@ -5,14 +5,16 @@ from datetime import datetime, timezone
 from redis.asyncio import Redis
 from typing import Optional
 
+from app.core.redis import RedisManager
+
 
 class SessionService:
     """
     Сервис для взаимодействия с Redis
     """
 
-    def __init__(self, redis_client: Redis):
-        self.redis_client = redis_client
+    def __init__(self, redis_manager: RedisManager):
+        self.redis_manager = redis_manager
         self.timeout = 86400  # 24 часа
 
     def _session_key(self, session_id: str) -> str:
@@ -32,41 +34,51 @@ class SessionService:
             "created_at": now,
             "last_activity": now
         }
+        redis_client = self.redis_manager.get_client()
 
         # Store session in redis with TTL
-        key = self._session_key(session_id)
-        await self.redis_client.setex(key, self.timeout, json.dumps(session_data))
+        await redis_client.setex(
+            self._session_key(session_id),
+            self.timeout,
+            json.dumps(session_data)
+        )
 
         # Store user session
-        user_key = self._user_sessions_key(user_id)
-        await self.redis_client.sadd(user_key, session_id)
+        await redis_client.sadd(self._user_sessions_key(user_id), session_id)
 
         return session_id
 
     async def resolve(self, session_id: str) -> Optional[str]:
         key = self._session_key(session_id)
-        data = await self.redis_client.get(key)
+        redis_client = self.redis_manager.get_client()
+        
+        # Load session from redis
+        data = await redis_client.get(key)
         if data:
-            session_data = json.loads(data)
-            await self.redis_client.expire(key, self.timeout)
-            return session_data.get("user_id")
+            await redis_client.expire(key, self.timeout)
+            # Return user id from session
+            return json.loads(data).get("user_id")
         return None
 
     async def delete_session(self, session_id: str) -> None:
         key = self._session_key(session_id)
-        data = await self.redis_client.get(key)
+        redis_client = self.redis_manager.get_client()
+
+        #Load data from session
+        data = await redis_client.get(key)
         if data:
             user_id = json.loads(data).get("user_id")
-            await self.redis_client.delete(key)
+            await redis_client.delete(key)
             if user_id:
-                await self.redis_client.srem(self._user_sessions_key(user_id), session_id)
+                await redis_client.srem(self._user_sessions_key(user_id), session_id)
         else:
-            await self.redis_client.delete(key)
+            await redis_client.delete(key)
 
     async def delete_user_sessions(self, user_id: str) -> None:
         user_key = self._user_sessions_key(user_id)
-        session_ids = await self.redis_client.smembers(user_key)
+        redis_client = self.redis_manager.get_client()
+        session_ids = await redis_client.smembers(user_key)
         if session_ids:
             keys = [self._session_key(sid) for sid in session_ids]
-            await self.redis_client.delete(*keys)
-        await self.redis_client.delete(user_key)
+            await redis_client.delete(*keys)
+        await redis_client.delete(user_key)

@@ -33,7 +33,7 @@ async def register(
     return user
 
 
-@router.post("/login", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/login", response_model=UserResponse)
 async def login(
     request: Request,
     user_data: UserLoginRequest,
