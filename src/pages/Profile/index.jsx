@@ -1,6 +1,6 @@
 import styles from './Profile.module.scss';
 
-export const Profile = function () {
+export const Profile = () => {
     let user = {
         username: "Mary Smith",
         birthdate: "20/03/2000"

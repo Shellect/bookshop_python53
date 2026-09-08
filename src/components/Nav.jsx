@@ -14,19 +14,19 @@ export default function Nav() {
                             <NavLink
                                 to="/"
                                 className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}
-                            ><i class="bi bi-house"></i> Главная</NavLink>
+                            ><i className="bi bi-house"></i> Главная</NavLink>
                         </li>
                         <li className="nav-item">
                             <NavLink
                                 to="/profile"
                                 className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}
-                            ><i class="text-primary bi bi-person-circle"></i> Профиль</NavLink>
+                            ><i className="text-primary bi bi-person-circle"></i> Профиль</NavLink>
                         </li>
                         <li className="nav-item">
                             <NavLink
                                 to="/cart"
                                 className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}
-                            ><i class="bi bi-cart"></i> Корзина</NavLink>
+                            ><i className="bi bi-cart"></i> Корзина</NavLink>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link" href="#">Выход</a>

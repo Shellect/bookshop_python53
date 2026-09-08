@@ -3,10 +3,10 @@ import {BookGallery, BookCard} from "./components/gallery";
 import {OrderForm as OrderForm} from "./components/OrderForm";
 import Nav from "./components/Nav";
 import {Route, Routes} from "react-router";
-import {Profile} from "./pages/profile/Profile";
+import {Profile} from "./pages/Profile";
 import {connect} from "react-redux";
-import {Registration} from "./pages/Registration.jsx";
-import {Login} from "./pages/Login.jsx";
+import {Registration} from "./pages/Registration";
+import {Login} from "./pages/Login";
 
 class App extends React.Component {
 
@@ -64,7 +64,7 @@ class App extends React.Component {
                                         />)}
                                     </BookGallery>
                                 }/>
-                                <Route path="/profile" element={<Profile/>}/>
+                                <Route path="/profile" element={<Profile />}/>
                                 <Route path="/cart" element={
                                     <OrderForm bookName={this.state.bookName} quantity={this.state.quantity}/>
                                 }/>
