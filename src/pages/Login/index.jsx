@@ -1,7 +1,7 @@
 import {Link, useNavigate} from "react-router";
 import {useState} from "react";
 import {useDispatch} from "react-redux";
-import {login} from "../../slices/authSlice.js";
+import {login} from "@/slices/authSlice.js";
 
 export const Login = () => {
     const [loginField, setLogin] = useState('');

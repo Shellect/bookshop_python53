@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { setPage } from "./pageSlice";
+import { setPage } from "@/slices/pageSlice";
 import { useState } from "react";
 
 export default function Pagination() {

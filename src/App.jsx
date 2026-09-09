@@ -1,12 +1,8 @@
 import React from "react";
-import {BookGallery, BookCard} from "./components/gallery";
-import {OrderForm as OrderForm} from "./components/OrderForm";
-import Nav from "./components/Nav";
 import {Route, Routes} from "react-router";
-import {Profile} from "./pages/Profile";
 import {connect} from "react-redux";
-import {Registration} from "./pages/Registration";
-import {Login} from "./pages/Login";
+import {BookCard, OrderForm, Nav} from "@/components";
+import {Profile, Registration, BookGallery, Login} from "@/pages";
 
 class App extends React.Component {
 
@@ -64,12 +60,12 @@ class App extends React.Component {
                                         />)}
                                     </BookGallery>
                                 }/>
-                                <Route path="/profile" element={<Profile />}/>
+                                <Route path="/profile" element={<Profile/>}/>
                                 <Route path="/cart" element={
                                     <OrderForm bookName={this.state.bookName} quantity={this.state.quantity}/>
                                 }/>
-                                <Route path="/registration" element={<Registration />}/>
-                                <Route path="/login" element={<Login />}/>
+                                <Route path="/registration" element={<Registration/>}/>
+                                <Route path="/login" element={<Login/>}/>
                             </Routes>
                         </div>
                     </div>

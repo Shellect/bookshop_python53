@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import {pageReducer} from './components/gallery';
-import {authReducer} from "./slices/authSlice.js";
+import {pageReducer} from '@/slices/pageSlice';
+import {authReducer} from "@/slices/authSlice";
 
 export default configureStore({
     reducer: {

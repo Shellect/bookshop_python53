@@ -13,4 +13,4 @@ const slice = createSlice({
 });
 
 export const {setPage} = slice.actions;
-export default slice.reducer;
+export const pageReducer =  slice.reducer;

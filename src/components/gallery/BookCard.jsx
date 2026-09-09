@@ -1,11 +1,10 @@
-import { useState } from "react";
 import styles from "./BookCard.module.scss";
 
-export default function BookCard({ title, author, poster, price, setBookName }) {
+export const BookCard = ({title, author, poster, price, setBookName}) => {
     return (
         <div className="col">
-            <div className={"card p-3 " + styles.bookCard} >
-                <img src={poster} alt="..." className="card-img-top" />
+            <div className={"card p-3 " + styles.bookCard}>
+                <img src={poster} alt="..." className="card-img-top"/>
                 <div className="card-body">
                     <h5 className="card-text">{title}</h5>
                     <p className="card-text">
@@ -17,10 +16,10 @@ export default function BookCard({ title, author, poster, price, setBookName }) 
                     <button
                         type="button"
                         className="btn btn-warning"
-                        onClick={() => setBookName(title)}>В корзину</button>
+                        onClick={() => setBookName(title)}>В корзину
+                    </button>
                 </div>
             </div>
         </div>
     );
-
 }
