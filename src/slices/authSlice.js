@@ -40,32 +40,54 @@ export const login = createAsyncThunk(
             return rejectWithValue({detail: error.message});
         }
     }
-)
+);
+
+export const checkAuth = createAsyncThunk(
+    'auth/check',
+    async (_, {rejectWithValue}) => {
+        try {
+            const response = await fetch('/api/auth/me');
+            if (!response.ok) {
+                return rejectWithValue(null);
+            }
+            return await response.json();
+        } catch (error) {
+            return rejectWithValue({detail: error.message});
+        }
+    }
+);
+
+const reducers = {
+    pending: (state) => {
+        state.isLoading = true;
+        state.error = null
+    },
+    fulfilled: (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+    },
+    rejected: (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+    }
+}
 
 const slice = createSlice({
     name: 'auth',
     initialState: {
+        isLoading: false,
         user: null,
-        isLoading: false
+        isAuthenticated: false
     },
     reducers: {},
     extraReducers: (builder) => {
-        builder.addAsyncThunk(login, {
-            pending: (state) => {
-                state.isLoading = true;
-                state.error = null
-            },
-            fulfilled: (state, action) => {
-                state.isLoading = false;
-                state.user = action.payload
-            },
-            rejected: (state) => {
-                state.isLoading = false;
-            }
-        })
+        builder
+            .addAsyncThunk(login, reducers)
+            .addAsyncThunk(register, reducers)
+            .addAsyncThunk(checkAuth, reducers)
     }
-})
-
-export const selectUser = state => state.auth.user;
+});
 
 export const authReducer = slice.reducer;

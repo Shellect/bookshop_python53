@@ -3,6 +3,7 @@ import {Route, Routes} from "react-router";
 import {connect} from "react-redux";
 import {BookCard, OrderForm, Nav} from "@/components";
 import {Profile, Registration, BookGallery, Login} from "@/pages";
+import {checkAuth} from "@/slices/authSlice.js";
 
 class App extends React.Component {
 
@@ -18,6 +19,7 @@ class App extends React.Component {
 
     componentDidMount() {
         this.loadBooks();
+        this.props.checkAuth();
     }
 
     componentDidUpdate(prevProps) {
@@ -75,10 +77,7 @@ class App extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        page: state.page.value
-    }
-}
+const mapStateToProps = (state) => ({page: state.page.value});
+const mapDispatchToProps = (dispatch) => ({checkAuth: () => dispatch(checkAuth())});
 
-export default connect(mapStateToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

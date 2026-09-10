@@ -19,6 +19,11 @@ def _clear_session(request: Request) -> None:
     request.state.clear_session = True
 
 
+@router.get("/me", response_model=UserResponse)
+async def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     request: Request,
