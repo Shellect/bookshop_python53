@@ -1,61 +1,25 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
-export const register = createAsyncThunk(
-    'auth/register',
-    async (credentials, {rejectWithValue}) => {
-        try {
-            const response = await fetch('/api/auth/register', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(credentials)
-            });
-            if (!response.ok) {
-                return rejectWithValue(await response.json());
-            }
-            return await response.json();
-        } catch (error) {
-            return rejectWithValue({detail: error.message});
-        }
-    }
-);
+const options = (credentials) => ({
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(credentials)
+});
 
-export const login = createAsyncThunk(
-    'auth/login',
-    async (credentials, {rejectWithValue}) => {
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(credentials)
-            });
-            if (!response.ok) {
-                return rejectWithValue(await response.json());
-            }
-            return await response.json();
-        } catch (error) {
-            return rejectWithValue({detail: error.message});
-        }
+const sendRequest = (endpoint, post) => async (credentials, {rejectWithValue}) => {
+    try {
+        const response = await fetch('/api/auth/' + endpoint, post && options(credentials));
+        const data = await response.json();
+        return response.ok ? data : rejectWithValue(data);
+    } catch (error) {
+        return rejectWithValue({detail: error.message});
     }
-);
+}
 
-export const checkAuth = createAsyncThunk(
-    'auth/check',
-    async (_, {rejectWithValue}) => {
-        try {
-            const response = await fetch('/api/auth/me');
-            if (!response.ok) {
-                return rejectWithValue(null);
-            }
-            return await response.json();
-        } catch (error) {
-            return rejectWithValue({detail: error.message});
-        }
-    }
-);
+export const register = createAsyncThunk('auth/register', sendRequest('register', true));
+export const login = createAsyncThunk('auth/login', sendRequest('login', true));
+export const logout = createAsyncThunk('auth/logout', sendRequest('logout', true));
+export const checkAuth = createAsyncThunk('auth/check', sendRequest('me'));
 
 const reducers = {
     pending: (state) => {
@@ -81,13 +45,35 @@ const slice = createSlice({
         user: null,
         isAuthenticated: false
     },
-    reducers: {},
+    reducers: {
+        localLogout(state) {
+            state.user = null;
+            state.isAuthenticated = false;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addAsyncThunk(login, reducers)
             .addAsyncThunk(register, reducers)
             .addAsyncThunk(checkAuth, reducers)
+            .addAsyncThunk(logout, {
+                pending: (state) => {
+                    state.isLoading = true;
+                    state.error = null
+                },
+                fulfilled: (state) => {
+                    state.isLoading = false;
+                    state.user = null;
+                    state.isAuthenticated = false;
+                },
+                rejected: (state) => {
+                    state.isLoading = false;
+                    state.user = null;
+                    state.isAuthenticated = false;
+                }
+            })
     }
 });
 
+export const {localLogout} = slice.actions;
 export const authReducer = slice.reducer;

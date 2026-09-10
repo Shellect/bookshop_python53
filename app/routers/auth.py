@@ -52,7 +52,7 @@ async def login(
     return user
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.get("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
     auth_service: AuthService = Depends(get_auth_service)

@@ -1,10 +1,18 @@
-import {Link, NavLink} from "react-router";
-import {useSelector} from "react-redux";
+import {Link, NavLink, useNavigate} from "react-router";
+import {useDispatch, useSelector} from "react-redux";
+import {logout} from "@/slices/authSlice.js";
 
 const setActive = ({isActive}) => isActive ? "active nav-link" : "nav-link";
 
 export default function Nav() {
     const {isAuthenticated, user} = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await dispatch(logout());
+        navigate('/');
+    }
 
     return (
         <nav className="navbar navbar-expand-lg bg-warning">
@@ -29,7 +37,7 @@ export default function Nav() {
                                         className="bi bi-cart"></i> Корзина</NavLink>
                                 </li>
                                 <li className="nav-item">
-                                    <a className="nav-link" href="#">Выход</a>
+                                    <button type="button" className="nav-link" onClick={() => handleLogout()}>Выход</button>
                                 </li>
                             </>
                         ) : (
