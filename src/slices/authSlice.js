@@ -1,5 +1,26 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
+export const register = createAsyncThunk(
+    'auth/register',
+    async (credentials, {rejectWithValue}) => {
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(credentials)
+            });
+            if (!response.ok) {
+                return rejectWithValue(await response.json());
+            }
+            return await response.json();
+        } catch (error) {
+            return rejectWithValue({detail: error.message});
+        }
+    }
+);
+
 export const login = createAsyncThunk(
     'auth/login',
     async (credentials, {rejectWithValue}) => {
@@ -29,18 +50,19 @@ const slice = createSlice({
     },
     reducers: {},
     extraReducers: (builder) => {
-        builder
-            .addCase(login.pending, (state) => {
+        builder.addAsyncThunk(login, {
+            pending: (state) => {
                 state.isLoading = true;
                 state.error = null
-            })
-            .addCase(login.fulfilled, (state, action) => {
+            },
+            fulfilled: (state, action) => {
                 state.isLoading = false;
                 state.user = action.payload
-            })
-            .addCase(login.rejected, (state) => {
+            },
+            rejected: (state) => {
                 state.isLoading = false;
-            })
+            }
+        })
     }
 })
 

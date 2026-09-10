@@ -68,11 +68,9 @@ class SessionService:
         data = await redis_client.get(key)
         if data:
             user_id = json.loads(data).get("user_id")
-            await redis_client.delete(key)
             if user_id:
                 await redis_client.srem(self._user_sessions_key(user_id), session_id)
-        else:
-            await redis_client.delete(key)
+        await redis_client.delete(key)
 
     async def delete_user_sessions(self, user_id: str) -> None:
         user_key = self._user_sessions_key(user_id)

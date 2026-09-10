@@ -25,7 +25,7 @@ export const Login = () => {
         }
         try {
             const user = await dispatch(login({login: loginField, password: passwordField})).unwrap();
-            if(user.username === loginField){
+            if (user.username === loginField) {
                 navigate('/profile');
             }
         } catch (error) {
@@ -37,19 +37,23 @@ export const Login = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="mt-3 p-3 rounded bg-body-tertiary shadow col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+        <form onSubmit={handleSubmit}
+              className="mt-3 p-3 rounded bg-body-tertiary shadow col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
             <h2 className="text-center mb-3">Login</h2>
             <div className="row mb-3">
                 <div className="col-2"><label htmlFor="login"><span className="form-label">Login:</span></label></div>
                 <div className="col-10">
-                    <input id="login" type="text" className="form-control" name="login" onInput={e => setLogin(e.target.value)}/>
+                    <input id="login" type="text" className="form-control" name="login"
+                           onInput={e => setLogin(e.target.value)}/>
                     <small className="form-text text-danger">{errors.login}</small>
                 </div>
             </div>
             <div className="row mb-3">
-                <div className="col-2"><label htmlFor="password"><span className="form-label"></span></label>Password:</div>
+                <div className="col-2"><label htmlFor="password"><span className="form-label"></span></label>Password:
+                </div>
                 <div className="col-10">
-                    <input id="password" type="password" className="form-control" name="password" onInput={e => setPassword(e.target.value)}/>
+                    <input id="password" type="password" className="form-control" name="password"
+                           onInput={e => setPassword(e.target.value)}/>
                     <small className="form-text text-danger">{errors.password}</small>
                 </div>
             </div>
