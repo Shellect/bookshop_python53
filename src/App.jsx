@@ -19,7 +19,7 @@ class App extends React.Component {
 
     componentDidMount() {
         this.loadBooks();
-        this.props.checkAuth();
+        this.props.dispatch(checkAuth());
     }
 
     componentDidUpdate(prevProps) {
@@ -78,6 +78,5 @@ class App extends React.Component {
 }
 
 const mapStateToProps = (state) => ({page: state.page.value});
-const mapDispatchToProps = (dispatch) => ({checkAuth: () => dispatch(checkAuth())});
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps)(App);

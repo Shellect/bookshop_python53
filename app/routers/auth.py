@@ -5,7 +5,7 @@ from app.dependencies.services import get_auth_service
 from app.models.user import User
 from app.schemas.user import UserCreateRequest, UserLoginRequest, UserResponse
 from app.services import AuthService
-from app.services.exceptions import AuthenticationError, DuplicateUserError
+from app.services.exceptions import AuthenticationError, DuplicateUserError, AlreadyAuthenticatedError
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -30,6 +30,8 @@ async def register(
     user_data: UserCreateRequest,
     auth_service: AuthService = Depends(get_auth_service)
 ):
+    if request.state.is_authenticated:
+        raise AlreadyAuthenticatedError()
     try:
         user, session_id = await auth_service.create_user(user_data)
     except DuplicateUserError as exc:
@@ -44,6 +46,8 @@ async def login(
     user_data: UserLoginRequest,
     auth_service: AuthService = Depends(get_auth_service)
 ):
+    if request.state.is_authenticated:
+        raise AlreadyAuthenticatedError()
     try:
         user, session_id = await auth_service.authenticate_user(user_data)
     except AuthenticationError as exc:
@@ -52,7 +56,7 @@ async def login(
     return user
 
 
-@router.get("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
     auth_service: AuthService = Depends(get_auth_service)

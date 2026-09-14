@@ -75,6 +75,8 @@ class SessionService:
     async def delete_user_sessions(self, user_id: str) -> None:
         user_key = self._user_sessions_key(user_id)
         redis_client = self.redis_manager.get_client()
+
+        # Load all user session keys
         session_ids = await redis_client.smembers(user_key)
         if session_ids:
             keys = [self._session_key(sid) for sid in session_ids]

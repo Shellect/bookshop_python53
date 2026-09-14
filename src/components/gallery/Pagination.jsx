@@ -1,20 +1,29 @@
-import { useDispatch } from "react-redux";
-import { setPage } from "@/slices/pageSlice";
-import { useState } from "react";
+import {useSelector} from "react-redux";
+import {PageButton} from "@/components/gallery/PageButton.jsx";
 
 export default function Pagination() {
-    const [currentPage, setCurrentPage] = useState(2);
-    const dispatch = useDispatch();
+    const {value: currentPage, limit, total} = useSelector(state => state.page);
+
+    const maxVisiblePages = 5;
+    const startPage = Math.max(0, currentPage - 2);
+    const lastPage = Math.floor(total / limit);
+
+    const buttons = Array.from(
+        {length: Math.min(lastPage - startPage, maxVisiblePages)},
+        (_, index) => <PageButton key={index} page={startPage + index} isCurrent={startPage + index === currentPage}/>
+    );
+    if (currentPage - 2 > 0) {
+        buttons.unshift(<li><button type="button" className="page-link">...</button></li>);
+        buttons.unshift(<PageButton page={0}>First</PageButton>);
+    }
+    if (currentPage + 3 < total / limit) {
+        buttons.push(<li><button type="button" className="page-link">...</button></li>);
+        buttons.push(<PageButton page={lastPage - 1}>Last</PageButton>);
+    }
 
     return (
         <nav aria-label="Page navigation">
-            <ul className="pagination">
-                <li className="page-item"><button type="button" className="page-link" onClick={() => dispatch(setPage(1))}>Previous</button></li>
-                <li className="page-item"><button type="button" className="page-link" onClick={() => dispatch(setPage(1))}>1</button></li>
-                <li className="page-item"><button type="button" className="page-link" onClick={() => dispatch(setPage(2))}>2</button></li>
-                <li className="page-item"><button type="button" className="page-link" onClick={() => dispatch(setPage(3))}>3</button></li>
-                <li className="page-item"><button type="button" className="page-link" onClick={() => dispatch(setPage(3))}>Next</button></li>
-            </ul>
+            {total > limit && <ul className="pagination">{buttons}</ul>}
         </nav>
     )
 }

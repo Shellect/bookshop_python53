@@ -33,8 +33,6 @@ const reducers = {
     },
     rejected: (state) => {
         state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
     }
 }
 
@@ -68,8 +66,6 @@ const slice = createSlice({
                 },
                 rejected: (state) => {
                     state.isLoading = false;
-                    state.user = null;
-                    state.isAuthenticated = false;
                 }
             })
     }

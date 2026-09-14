@@ -46,7 +46,7 @@ export default function Nav() {
                                     <NavLink to="/login" className={setActive}>Войти</NavLink>
                                 </li>
                                 <li className="nav-item">
-                                    <NavLink to="/register" className={setActive}>Зарегистрироваться</NavLink>
+                                    <NavLink to="/registration" className={setActive}>Зарегистрироваться</NavLink>
                                 </li>
                             </>
                         )}

@@ -33,9 +33,8 @@ class SessionMiddleware(BaseHTTPMiddleware):
         # Если сессия была изменена в процессе запроса
         if hasattr(request.state, "new_session_id"):
             response.set_cookie(
-
                 key="session_id",
-                value= session_id if is_authenticated and session_id else request.state.new_session_id,
+                value= request.state.new_session_id,
                 httponly=True,
                 secure = not settings.debug,
                 samesite = "lax",
