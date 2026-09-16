@@ -1,6 +1,5 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
 
 from app.core.config import settings
 from app.services.session_service import SessionService
@@ -13,17 +12,19 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
 
     async def dispatch(self, request: Request, call_next):
-        session_id = request.cookies.get("session_id")
-        is_authenticated = False
-        if session_id:
-            # Проверяем сессию - быстрая операция redis
-            user_id = await self.session_service.resolve(session_id)
-            if user_id:
-                is_authenticated = True
-                # Передаем ID пользователя в обработчик запроса
-                request.state.user_id = user_id
+        # Проверяем сессию - быстрая операция redis
+        if (session_id := request.cookies.get("session_id")) and (user := await self.session_service.resolve(session_id)):  
+            user_id = user.get("user_id")
+            request.state.session_id = session_id
+            request.state.user_id = user_id
+            request.state.is_authenticated = user_id is not None
+        else:
+            new_session_id = await self.session_service.create_session()
+            request.state.session_id = new_session_id
+            request.state.user_id = None
+            request.state.is_authenticated = False
+            request.state.new_session_id = new_session_id
 
-        request.state.is_authenticated = is_authenticated
         response = await call_next(request)
 
         if getattr(request.state, "clear_session", False):
@@ -31,10 +32,10 @@ class SessionMiddleware(BaseHTTPMiddleware):
             return response
 
         # Если сессия была изменена в процессе запроса
-        if hasattr(request.state, "new_session_id"):
+        if new_session_id := getattr(request.state, "new_session_id", False):
             response.set_cookie(
                 key="session_id",
-                value= request.state.new_session_id,
+                value= new_session_id,
                 httponly=True,
                 secure = not settings.debug,
                 samesite = "lax",

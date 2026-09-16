@@ -8,13 +8,14 @@ from app.dependencies.auth import get_active_user
 from app.dependencies.services import get_db, get_session_service
 from app.middleware.session_middleware import SessionMiddleware
 from app.models import Book, User
-from app.routers import auth, users
+from app.routers import auth, users, cart
 from app.schemas.book import BookResponse
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(SessionMiddleware, session_service=get_session_service())
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(cart.router)
 
 @app.get("/")
 def root():

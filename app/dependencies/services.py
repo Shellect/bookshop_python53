@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 
 from app.core.database import SessionLocal
 from app.core.redis import redis_manager
-from app.services import AuthService, SessionService, UserService
+from app.services import AuthService, CartService, SessionService, UserService
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -29,3 +29,9 @@ def get_auth_service(
     user_service: UserService = Depends(get_user_service),
 ) -> AuthService:
     return AuthService(session_service, user_service)
+
+
+def get_cart_service(
+    session_service: SessionService = Depends(get_session_service),
+) -> CartService:
+    return CartService(session_service)
