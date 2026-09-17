@@ -8,9 +8,8 @@ from app.services.user_service import UserService
 async def get_current_user(request: Request, user_service: UserService = Depends(get_user_service)) -> User:
     # Проверяем есть ли user_id в request.state
     # это устанавливается в SessionMiddleware
-    if user_id := getattr(request.state, "user_id", False):
-        user = await user_service.get_by_id(user_id)
-        if user :
+    if user_id := getattr(request.state, "user_id", None):
+        if user := await user_service.get_by_id(user_id):
             return user
     raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
 

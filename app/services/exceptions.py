@@ -13,4 +13,4 @@ class AuthenticationError(Exception):
 
 class AlreadyAuthenticatedError(HTTPException):
     def __init__(self, message: str = "Вы уже вошли в систему"):
-        super.__init__(status.HTTP_409_CONFLICT, {"error": "already_authenticated", "message": message})
+        super().__init__(status.HTTP_409_CONFLICT, {"error": "already_authenticated", "message": message})

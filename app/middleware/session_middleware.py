@@ -2,45 +2,46 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.config import settings
-from app.services.session_service import SessionService
 
 
 class SessionMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, session_service: SessionService):
-        super().__init__(app)
-        self.session_service = session_service
-
-
     async def dispatch(self, request: Request, call_next):
+        cookie_name = settings.session_cookie_name
+        incoming = request.cookies.get(cookie_name)
+        session_service = request.app.state.session_service
+
+        request.state.session_id = None
+        request.state.user_id = None
+        request.state.is_authenticated = False
+
         # Проверяем сессию - быстрая операция redis
-        if (session_id := request.cookies.get("session_id")) and (user := await self.session_service.resolve(session_id)):  
-            user_id = user.get("user_id")
-            request.state.session_id = session_id
-            request.state.user_id = user_id
-            request.state.is_authenticated = user_id is not None
-        else:
-            new_session_id = await self.session_service.create_session()
-            request.state.session_id = new_session_id
-            request.state.user_id = None
-            request.state.is_authenticated = False
-            request.state.new_session_id = new_session_id
+        if incoming:
+            if data := await session_service.resolve(incoming):
+                user_id = data.get("user_id")
+                request.state.session_id = incoming
+                request.state.user_id = user_id
+                request.state.is_authenticated = user_id is not None
 
         response = await call_next(request)
 
+        # Logout
         if getattr(request.state, "clear_session", False):
-            response.delete_cookie("session_id", path="/")
+            response.delete_cookie(cookie_name, path="/")
             return response
 
         # Если сессия была изменена в процессе запроса
-        if new_session_id := getattr(request.state, "new_session_id", False):
+        session_id = getattr(request.state, "new_session_id", None) or request.state.session_id
+        if session_id:
             response.set_cookie(
-                key="session_id",
-                value= new_session_id,
+                key=settings.session_cookie_name,
+                value=session_id,
                 httponly=True,
-                secure = not settings.debug,
-                samesite = "lax",
-                path = "/",
-                max_age= self.session_service.timeout
+                secure=not settings.debug,
+                samesite="lax",
+                path="/",
+                max_age=settings.session_ttl_seconds,
             )
+        elif incoming:
+            response.delete_cookie(cookie_name, path="/")
 
         return response

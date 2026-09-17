@@ -22,7 +22,7 @@ async def register(
     user_data: UserCreateRequest,
     auth_service: AuthService = Depends(get_auth_service)
 ):
-    if getattr(request.state, "is_authenticated", False):
+    if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
     try:
         current_session_id = getattr(request.state, "session_id")
@@ -39,7 +39,7 @@ async def login(
     user_data: UserLoginRequest,
     auth_service: AuthService = Depends(get_auth_service)
 ):
-    if getattr(request.state, "is_authenticated", False):
+    if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
     try:
         current_session_id = getattr(request.state, "session_id")
@@ -55,9 +55,9 @@ async def logout(
     request: Request,
     auth_service: AuthService = Depends(get_auth_service)
 ):
-    if not getattr(request.state, "is_authenticated", False):
+    if not getattr(request.state, "is_authenticated", None):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not authenticated")
-    await auth_service.logout(request.cookies.get("session_id"))
+    await auth_service.logout(getattr(request.state, "session_id"))
     request.state.clear_session = True
 
 
@@ -67,7 +67,7 @@ async def logout_all(
     current_user: User = Depends(get_current_user),
     auth_service: AuthService = Depends(get_auth_service)
 ):
-    if not getattr(request.state, "is_authenticated", False):
+    if not getattr(request.state, "is_authenticated", None):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not authenticated")
     await auth_service.logout_all(current_user)
     request.state.clear_session = True

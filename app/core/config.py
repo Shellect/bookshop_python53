@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     redis_password: str
     redis_db: int = 0
 
+    # Session
+    session_cookie_name: str = "session_id"
+    session_ttl_seconds: int = 86400
+    cart_user_ttl_seconds: int = 86400 * 30
+
     # Database
     postgres_host: str
     postgres_port: int = 5432
