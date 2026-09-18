@@ -3,12 +3,14 @@ import {useDispatch} from "react-redux";
 import {Link, useNavigate} from 'react-router';
 import {register} from "@/slices/authSlice.js";
 
+const emptyErrors = () => ({login: "", email: "", password: "", confirm_password: "", form: ""});
+
 export const Registration = () => {
     const [loginField, setLoginField] = useState('');
     const [emailField, setEmailField] = useState('');
     const [passwordField, setPasswordField] = useState('');
     const [confirmPasswordField, setConfirmPasswordField] = useState('');
-    const [errors, setErrors] = useState({login: '', email: '', password: ''});
+    const [errors, setErrors] = useState(emptyErrors());
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -16,17 +18,19 @@ export const Registration = () => {
     const handleSubmit = async e => {
         e.preventDefault();
 
-        const loginErrorMessage = loginField.length === 0 ? 'Login field is empty' : '';
-        const isEmailErrorMessage = emailField.length === 0 ? 'Email field is empty' : '';
-        const isPasswordMessage = passwordField.length === 0 ? 'Password field is empty' : '';
+        const loginErrorMessage = loginField.length === 0;
+        const isEmailErrorMessage = emailField.length === 0;
+        const isPasswordMessage = passwordField.length === 0;
         if (loginErrorMessage || isEmailErrorMessage || isPasswordMessage) {
             setErrors({
-                login: loginErrorMessage,
-                email: isEmailErrorMessage,
-                password: isPasswordMessage
+                ...emptyErrors(),
+                login: loginErrorMessage ? 'Login field is empty' : '',
+                email: isEmailErrorMessage ? 'Email field is empty' : '',
+                password: isPasswordMessage ? 'Password field is empty' : '',
             });
             return;
         }
+        setErrors(emptyErrors());
         try {
             const user = await dispatch(register({
                 login: loginField,
@@ -39,9 +43,12 @@ export const Registration = () => {
             }
         } catch (error) {
             setErrors({
-                'login': error.detail,
-                password: ''
-            })
+                login: error?.fields?.login ?? '',
+                email: error?.fields?.email ?? '',
+                password: error?.fields?.password ?? '',
+                confirm_password: error?.fields?.confirm_password ?? '',
+                form: error?.form ?? '',
+            });
         }
     }
 
@@ -49,6 +56,7 @@ export const Registration = () => {
         <form onSubmit={handleSubmit}
               className="mt-3 p-3 rounded bg-body-tertiary shadow col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
             <h2 className="text-center mb-3">Registration</h2>
+            {errors.form && <div className="alert alert-danger">{errors.form}</div>}
             <div className="row mb-3">
                 <div className="col-2"><label htmlFor="username" className="form-label">Login:</label></div>
                 <div className="col-10">
@@ -80,10 +88,16 @@ export const Registration = () => {
                     <input id="confirm-password" type="password" className="form-control"
                            name="confirm_password"
                            onInput={e => setConfirmPasswordField(e.target.value)}/>
+                    <small className="form-text text-danger">{errors.confirm_password}</small>
                 </div>
             </div>
             <div className="row mb-3 justify-content-end">
-                <span>Already have an account? <Link to="/login">Login</Link></span>
+                <div className="col-6 d-grid">
+                    <button className="btn btn-warning">Register</button>
+                </div>
+                <div className="col-6">
+                    <span>Already have an account? <Link to="/login">Login</Link></span>
+                </div>
             </div>
         </form>
     );

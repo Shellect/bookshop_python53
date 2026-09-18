@@ -1,4 +1,7 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
+import {errorFromException, errorFromResponse} from "@/utils/authErrors.js";
+
+const REQUEST_TIMEOUT_MS = 15_000;
 
 const options = (credentials) => ({
     method: "POST",
@@ -7,12 +10,25 @@ const options = (credentials) => ({
 });
 
 const sendRequest = (endpoint, post) => async (credentials, {rejectWithValue}) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-        const response = await fetch('/api/auth/' + endpoint, post && options(credentials));
-        const data = await response.json();
-        return response.ok ? data : rejectWithValue(data);
+        const response = await fetch("/api/auth/" + endpoint, {
+            ...(post ? options(credentials) : {}),
+            signal: controller.signal,
+        });
+        if (response.ok) {
+            if (response.status === 204) {
+                return null;
+            }
+            const text = await response.text();
+            return text ? JSON.parse(text) : null;
+        }
+        return rejectWithValue(await errorFromResponse(response));
     } catch (error) {
-        return rejectWithValue({detail: error.message});
+        return rejectWithValue(errorFromException(error));
+    } finally {
+        clearTimeout(timer);
     }
 }
 
@@ -31,8 +47,9 @@ const reducers = {
         state.user = action.payload;
         state.isAuthenticated = true;
     },
-    rejected: (state) => {
+    rejected: (state, action) => {
         state.isLoading = false;
+        state.error = action.payload ?? null;
     }
 }
 
@@ -41,7 +58,8 @@ const slice = createSlice({
     initialState: {
         isLoading: false,
         user: null,
-        isAuthenticated: false
+        isAuthenticated: false,
+        error: null,
     },
     reducers: {
         localLogout(state) {
@@ -64,8 +82,9 @@ const slice = createSlice({
                     state.user = null;
                     state.isAuthenticated = false;
                 },
-                rejected: (state) => {
+                rejected: (state, action) => {
                     state.isLoading = false;
+                    state.error = action.payload ?? null;
                 }
             })
     }

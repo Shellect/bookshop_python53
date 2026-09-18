@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 
 from app.dependencies.auth import get_current_user
 from app.dependencies.services import get_auth_service
 from app.models.user import User
 from app.schemas.user import UserCreateRequest, UserLoginRequest, UserResponse
 from app.services import AuthService
-from app.services.exceptions import AuthenticationError, DuplicateUserError, AlreadyAuthenticatedError
+from app.services.exceptions import AlreadyAuthenticatedError, NotAuthenticatedError
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -24,11 +24,8 @@ async def register(
 ):
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
-    try:
-        current_session_id = getattr(request.state, "session_id")
-        user, session_id = await auth_service.create_user(user_data, current_session_id)
-    except DuplicateUserError as exc:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, exc.message) from exc
+    current_session_id = getattr(request.state, "session_id")
+    user, session_id = await auth_service.create_user(user_data, current_session_id)
     request.state.new_session_id = session_id
     return user
 
@@ -41,11 +38,8 @@ async def login(
 ):
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
-    try:
-        current_session_id = getattr(request.state, "session_id")
-        user, session_id = await auth_service.authenticate_user(user_data, current_session_id)
-    except AuthenticationError as exc:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
+    current_session_id = getattr(request.state, "session_id")
+    user, session_id = await auth_service.authenticate_user(user_data, current_session_id)
     request.state.new_session_id = session_id
     return user
 
@@ -56,7 +50,7 @@ async def logout(
     auth_service: AuthService = Depends(get_auth_service)
 ):
     if not getattr(request.state, "is_authenticated", None):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not authenticated")
+        raise NotAuthenticatedError()
     await auth_service.logout(getattr(request.state, "session_id"))
     request.state.clear_session = True
 
@@ -68,6 +62,6 @@ async def logout_all(
     auth_service: AuthService = Depends(get_auth_service)
 ):
     if not getattr(request.state, "is_authenticated", None):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not authenticated")
+        raise NotAuthenticatedError()
     await auth_service.logout_all(current_user)
     request.state.clear_session = True

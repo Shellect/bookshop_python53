@@ -45,7 +45,7 @@ class AuthService:
     async def authenticate_user(self, user_data: UserLoginRequest, current_session_id: Optional[str]) -> Tuple[User, str]:
         user = await self.user_service.get_by_name(user_data.login)
         if not user or not user.is_active or not self.verify_password(user_data.password, user.hashed_password):
-            raise AuthenticationError("Incorrect login or password")
+            raise AuthenticationError()
 
         await self.user_service.update_last_login(user)
         session_id = await self._bind_session(current_session_id, str(user.id))

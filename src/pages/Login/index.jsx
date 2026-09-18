@@ -3,10 +3,12 @@ import {useState} from "react";
 import {useDispatch} from "react-redux";
 import {login} from "@/slices/authSlice.js";
 
+const emptyErrors = () => ({login: "", password: "", form: ""});
+
 export const Login = () => {
     const [loginField, setLogin] = useState('');
     const [passwordField, setPassword] = useState('');
-    const [errors, setErrors] = useState({login: '', password: ''})
+    const [errors, setErrors] = useState(emptyErrors());
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -19,10 +21,12 @@ export const Login = () => {
         if (isLoginError || isPasswordError) {
             setErrors({
                 login: isLoginError ? 'Login field is empty' : '',
-                password: isPasswordError ? 'Password field is empty' : ''
+                password: isPasswordError ? 'Password field is empty' : '',
+                form: '',
             })
             return;
         }
+        setErrors(emptyErrors());
         try {
             const user = await dispatch(login({login: loginField, password: passwordField})).unwrap();
             if (user.username === loginField) {
@@ -30,9 +34,10 @@ export const Login = () => {
             }
         } catch (error) {
             setErrors({
-                'login': error.detail,
-                password: ''
-            })
+                login: error?.fields?.login ?? '',
+                password: error?.fields?.password ?? '',
+                form: error?.form ?? '',
+            });
         }
     }
 
@@ -40,6 +45,7 @@ export const Login = () => {
         <form onSubmit={handleSubmit}
               className="mt-3 p-3 rounded bg-body-tertiary shadow col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
             <h2 className="text-center mb-3">Login</h2>
+            {errors.form && <div className="alert alert-danger">{errors.form}</div>}
             <div className="row mb-3">
                 <div className="col-2"><label htmlFor="login"><span className="form-label">Login:</span></label></div>
                 <div className="col-10">
@@ -58,7 +64,7 @@ export const Login = () => {
                 </div>
             </div>
             <div className="row mb-3 text-right">
-                <div className="col-6">
+                <div className="col-6 d-grid">
                     <button className="btn btn-primary">Login</button>
                 </div>
                 <div className="col-6">
