@@ -1,0 +1,36 @@
+services:
+
+  database:
+    image: postgres:14-alpine3.23
+    container_name: bookshop-database
+    shm_size: 128mb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - bookshop_network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "$POSTGRES_USER", "-d", "$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  migrate:
+    extends:
+      file: docker-compose.yml
+      service: backend
+    container_name: bookshop-migrate
+    environment:
+      TESTING: 1
+    entrypoint: "poetry run alembic --config /app/app/alembic.ini"
+    depends_on: !override
+      database:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+
+networks:
+  bookshop_network:

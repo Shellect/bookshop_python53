@@ -21,8 +21,8 @@ help:
 # Poetry dependencies add/install/update/remove
 package_manager:
 	@echo "$(GREEN)Running poetry $(ARGS)$(NC)"
-	docker build --target builder -t $(IMAGE_NAME):builder .
-	docker run --rm -it \
+	docker build --target base -t $(IMAGE_NAME):builder .
+	docker run --rm \
 		-v $(PWD)/pyproject.toml:/app/pyproject.toml \
 		-v $(PWD)/poetry.lock:/app/poetry.lock \
 		$(IMAGE_NAME):builder \

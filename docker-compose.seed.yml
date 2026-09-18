@@ -1,0 +1,38 @@
+services:
+
+  database:
+    image: postgres:14-alpine3.23
+    container_name: bookshop-database
+    shm_size: 128mb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - bookshop_network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "$POSTGRES_USER", "-d", "$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  seed:
+    extends:
+      file: docker-compose.yml
+      service: backend
+    build:
+      context: .
+      target: dev
+    container_name: bookshop-seed
+    entrypoint: "poetry run python"
+    depends_on: !override
+      database:
+        condition: service_healthy
+
+
+volumes:
+  postgres_data:
+
+networks:
+  bookshop_network:

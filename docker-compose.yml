@@ -54,27 +54,6 @@ services:
       retries: 3
       start_period: 5s
 
-  seed:
-    profiles:
-      - "seed"
-    extends:
-      service: backend
-    build:
-      context: .
-      target: dev
-    container_name: bookshop-seed
-    command: "poetry run python ${FIXTURE:-}"
-
-  migrate:
-    profiles:
-      - "migrate"
-    extends:
-      service: backend
-    container_name: bookshop-migrate
-    environment:
-      TESTING: 1
-    command: "poetry run alembic --config /app/app/alembic.ini ${COMMAND:-}"
-
   redis:
     image: redis:alpine3.23
     container_name: bookshop-redis
