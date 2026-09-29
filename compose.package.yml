@@ -1,0 +1,12 @@
+services:
+  package_manager:
+    build:
+      context: .
+      target: base
+    container_name: package_manager
+    env_file:
+      - ./.env
+    entrypoint: ["poetry"]
+    volumes:
+      - ./pyprojct.toml:/app/pyprojct.toml
+      - ./poetry.lock:/app/poetry.lock

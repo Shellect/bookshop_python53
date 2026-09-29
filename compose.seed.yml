@@ -1,0 +1,29 @@
+services:
+
+  database:
+    extends:
+      file: compose.yml
+      service: database
+
+  seed:
+    build:
+      context: .
+      target: dev
+    container_name: bookshop-seed
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - ./.env
+    networks:
+      - bookshop_network
+    entrypoint: ["poetry", "run", "python"]
+    depends_on:
+      database:
+        condition: service_healthy
+
+
+volumes:
+  postgres_data:
+
+networks:
+  bookshop_network:

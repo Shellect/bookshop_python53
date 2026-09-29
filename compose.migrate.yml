@@ -1,0 +1,32 @@
+services:
+
+  database:
+    extends:
+      file: compose.yml
+      service: database
+    networks:
+      - bookshop_network
+
+  migrate:
+    build:
+      context: .
+      target: runtime
+    container_name: bookshop-migrate
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - ./.env
+    networks:
+      - bookshop_network
+    environment:
+      TESTING: 1
+    entrypoint: ["poetry", "run", "alembic", "--config", "/app/app/alembic.ini"]
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+
+networks:
+  bookshop_network:
