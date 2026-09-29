@@ -25,24 +25,22 @@ class SessionService:
 
     async def _index_user_session(self, user_id: str, session_id: str) -> None:
         key = self._user_sessions_key(user_id)
-        await self.redis.sadd(key, session_id)
-        await self.redis.expire(key, self.timeout)
+        async with self.redis.pipeline(transaction=True) as pipe:
+            pipe.sadd(key, session_id)
+            pipe.expire(key, self.timeout)
+            await pipe.execute()
 
-    async def create_session(
-            self,
-            user_id: Optional[str] = None,
-            session_id: Optional[str] = None
-        ) -> str:
+    async def create_session(self, user_id: Optional[str] = None, session_id: Optional[str] = None) -> str:
         session_id = session_id or str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
-        session_data = {
+        key = self._session_key(session_id)
+        session_data = json.dumps({
             "user_id": str(user_id) if user_id else None,
             "created_at": now
-        }
+        })
 
         # Store session in redis with TTL
-        await self.redis.setex(self._session_key(session_id), self.timeout, json.dumps(session_data))
-
+        await self.redis.setex(key, self.timeout, session_data)
         if user_id:
             # Store user session
             await self._index_user_session(str(user_id), session_id)
@@ -60,26 +58,6 @@ class SessionService:
                 await self.redis.expire(self._user_sessions_key(user_id), self.timeout)
             return data
         return None
-
-    async def attach_user(self, session_id: str, user_id: str) -> str:
-        key = self._session_key(session_id)
-
-        if raw := await self.redis.get(key):
-            user = json.loads(raw)
-            if (old_user_id := user.get("user_id")) and old_user_id != user_id:
-                await self.redis.srem(self._user_sessions_key(old_user_id), session_id)
-            user["user_id"] = user_id
-            await self.redis.setex(key, self.timeout, json.dumps(user))
-        else:
-            # Сессия уже истекла - создаем заново
-            now = datetime.now(timezone.utc).isoformat()
-            await self.redis.setex(key, self.timeout, json.dumps({
-                "user_id": user_id,
-                "created_at": now
-            }))
-
-        await self._index_user_session(user_id, session_id)
-        return session_id
 
     async def delete_session(self, session_id: str) -> None:
         key = self._session_key(session_id)

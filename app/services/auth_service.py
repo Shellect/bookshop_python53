@@ -30,14 +30,15 @@ class AuthService:
         return pwd_context.hash(password)
 
     async def _bind_session(self, current_session_id: Optional[str], user_id: str) -> str:
+        session_id = await self.session_service.create_session(user_id, current_session_id)
         if current_session_id:
-            session_id = await self.session_service.attach_user(current_session_id, user_id)
             await self.cart_service.merge_guest_into_user(session_id, user_id)
-            return session_id
-        return await self.session_service.create_session(user_id)
+        return session_id
 
     async def create_user(self, user_data: UserCreateRequest, current_session_id: Optional[str]) -> Tuple[User, str]:
+        # Пароль в базе данных нельзя хранить в открытом виде
         hashed_password = self.hash_password(user_data.password)
+        # Новая запись в таблице пользователей
         user = await self.user_service.create(user_data, hashed_password)
         session_id = await self._bind_session(current_session_id, str(user.id))
         return user, session_id

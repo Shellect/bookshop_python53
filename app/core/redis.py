@@ -45,5 +45,7 @@ async def lifespan(app):
     from app.services.session_service import SessionService
 
     app.state.session_service = SessionService(redis)
-    yield
-    await redis_manager.disconnect()
+    try:
+        yield
+    finally:
+        await redis_manager.disconnect()
