@@ -12,6 +12,7 @@ services:
       context: .
       target: runtime
     container_name: bookshop-migrate
+    user: root
     volumes:
       - ./app:/app/app
     env_file:

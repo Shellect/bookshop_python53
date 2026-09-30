@@ -30,7 +30,7 @@ def upgrade() -> None:
     sa.Column('price', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.CheckConstraint('price >= 0'),
+    sa.CheckConstraint('price >= 0', name='books_price_check'),
     sa.PrimaryKeyConstraint('id'),
     schema='catalog'
     )

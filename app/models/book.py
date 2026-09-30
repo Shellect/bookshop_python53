@@ -12,7 +12,7 @@ from app.core.database import Base
 
 class Book(Base):
     __tablename__ = "books"
-    __table_args__ = (CheckConstraint("price >= 0"),{"schema": "catalog"} )
+    __table_args__ = (CheckConstraint("price >= 0", name="books_price_check"),{"schema": "catalog"} )
 
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
