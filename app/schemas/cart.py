@@ -5,11 +5,7 @@ from pydantic import BaseModel, Field
 
 class CartItemRequest(BaseModel):
     book_id: UUID
-    qty: int = Field(..., ge=1)
-
-
-class CartQtyRequest(BaseModel):
-    qty: int = Field(..., ge=0)
+    qty: int = Field(..., ge=1, le=9)
 
 
 class CartItemResponse(BaseModel):

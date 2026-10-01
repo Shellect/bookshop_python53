@@ -33,3 +33,10 @@ class NotAuthenticatedError(HTTPException):
             status.HTTP_400_BAD_REQUEST,
             {"error": "not_authenticated", "message": message},
         )
+
+class BookNotFoundError(HTTPException):
+    def __init__(self, message: str = "Book not found"):
+        super().__init__(
+            status.HTTP_404_NOT_FOUND,
+            {"error": "book_not_found", "message": message},
+        )

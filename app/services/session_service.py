@@ -30,7 +30,7 @@ class SessionService:
             pipe.expire(key, self.timeout)
             await pipe.execute()
 
-    async def create_session(self, user_id: Optional[str] = None, session_id: Optional[str] = None) -> str:
+    async def create_session(self, user_id: Optional[uuid.UUID] = None, session_id: Optional[str] = None) -> str:
         session_id = session_id or str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
         key = self._session_key(session_id)

@@ -1,12 +1,16 @@
+import logging
+
 from fastapi import APIRouter, Depends, Request, status
 
 from app.dependencies.auth import get_current_user
-from app.dependencies.services import get_auth_service
+from app.dependencies.services import get_auth_service, get_cart_merge_service
 from app.models.user import User
 from app.schemas.user import UserCreateRequest, UserLoginRequest, UserResponse
 from app.services import AuthService
+from app.services.cart_service import CartMergeService
 from app.services.exceptions import AlreadyAuthenticatedError, NotAuthenticatedError
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -20,12 +24,19 @@ async def me(current_user: User = Depends(get_current_user)):
 async def register(
     request: Request,
     user_data: UserCreateRequest,
-    auth_service: AuthService = Depends(get_auth_service)
+    auth_service: AuthService = Depends(get_auth_service),
+    cart_merge: CartMergeService = Depends(get_cart_merge_service)
 ):
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
     current_session_id = getattr(request.state, "session_id")
     user, session_id = await auth_service.create_user(user_data, current_session_id)
+    if current_session_id:
+        try:
+            await cart_merge.merge(current_session_id, user.id)
+        except Exception:
+            # Вход не должен падать из-за корзины; гостевой ключ остаётся, следующий вход повторит
+            logger.exception("Guest cart merge failed")
     request.state.new_session_id = session_id
     return user
 
@@ -34,12 +45,18 @@ async def register(
 async def login(
     request: Request,
     user_data: UserLoginRequest,
-    auth_service: AuthService = Depends(get_auth_service)
+    auth_service: AuthService = Depends(get_auth_service),
+    cart_merge: CartMergeService = Depends(get_cart_merge_service)
 ):
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
     current_session_id = getattr(request.state, "session_id")
     user, session_id = await auth_service.authenticate_user(user_data, current_session_id)
+    if current_session_id:
+        try:
+            await cart_merge.merge(current_session_id, user.id)
+        except Exception:
+            logger.exception("Guest cart merge failed")
     request.state.new_session_id = session_id
     return user
 
