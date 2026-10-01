@@ -1,6 +1,8 @@
 import {Link, NavLink, useNavigate} from "react-router";
 import {useDispatch, useSelector} from "react-redux";
 import {logout} from "@/slices/authSlice.js";
+import { LangSwitcher } from "./LangSwitcher";
+import { useTranslation } from "react-i18next";
 
 const setActive = ({isActive}) => isActive ? "active nav-link" : "nav-link";
 
@@ -8,6 +10,7 @@ export default function Nav() {
     const {isAuthenticated, user} = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const {t} = useTranslation();
 
     const handleLogout = async () => {
         await dispatch(logout());
@@ -17,7 +20,7 @@ export default function Nav() {
     return (
         <nav className="navbar navbar-expand-lg bg-warning">
             <div className="container-fluid justify-content-between">
-                <Link to="/" className="navbar-brand">Book Shop</Link>
+                <Link to="/" className="navbar-brand">{t('title')}</Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span className="navbar-toggler-icon"></span>
                 </button>
@@ -50,6 +53,9 @@ export default function Nav() {
                                 </li>
                             </>
                         )}
+                        <li>
+                            <LangSwitcher />
+                        </li>
                     </ul>
                 </div>
             </div>
