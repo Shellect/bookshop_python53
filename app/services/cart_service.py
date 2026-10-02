@@ -39,10 +39,14 @@ class GuestCartService:
         return await self.get_items()
 
     async def remove(self, book_id: UUID) -> CartResponse:
+        if not self.session_id:
+            return CartResponse(items=[])
         await self.redis.hdel(self._cart_key(), str(book_id))
         return await self.get_items()
 
     async def clear(self) -> None:
+        if not self.session_id:
+            return
         await self.redis.delete(self._cart_key())
 
 
@@ -85,7 +89,7 @@ class UserCartService:
         await self.db.execute(delete(Cart).where(Cart.user_id == self.user_id, Cart.book_id == book_id))
         await self.db.commit()
         return await self.get_items()
-        
+
     async def clear(self) -> None:
         await self.db.execute(delete(Cart).where(Cart.user_id == self.user_id))
         await self.db.commit()

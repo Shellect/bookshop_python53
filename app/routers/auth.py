@@ -25,19 +25,24 @@ async def register(
     request: Request,
     user_data: UserCreateRequest,
     auth_service: AuthService = Depends(get_auth_service),
-    cart_merge: CartMergeService = Depends(get_cart_merge_service)
+    cart: CartMergeService = Depends(get_cart_merge_service)
 ):
+    # Запрещаем повторный вход авторизованным пользователям
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
-    current_session_id = getattr(request.state, "session_id")
-    user, session_id = await auth_service.create_user(user_data, current_session_id)
-    if current_session_id:
+
+    user, session_id = await auth_service.create_user(user_data)
+
+    # Подгружаем старую сессию гостя
+    if old_session_id := getattr(request.state, "session_id", None):
         try:
-            await cart_merge.merge(current_session_id, user.id)
+            await cart.merge(old_session_id, user.id)
+            await auth_service.logout(old_session_id)
         except Exception:
             # Вход не должен падать из-за корзины; гостевой ключ остаётся, следующий вход повторит
             logger.exception("Guest cart merge failed")
-    request.state.new_session_id = session_id
+
+    request.state.session_id = session_id
     return user
 
 
@@ -48,16 +53,20 @@ async def login(
     auth_service: AuthService = Depends(get_auth_service),
     cart_merge: CartMergeService = Depends(get_cart_merge_service)
 ):
+    # Запрещаем повторный вход авторизованным пользователям
     if getattr(request.state, "is_authenticated", None):
         raise AlreadyAuthenticatedError()
-    current_session_id = getattr(request.state, "session_id")
-    user, session_id = await auth_service.authenticate_user(user_data, current_session_id)
-    if current_session_id:
+
+    user, session_id = await auth_service.authenticate_user(user_data)
+
+    if old_session_id := getattr(request.state, "session_id", None):
         try:
-            await cart_merge.merge(current_session_id, user.id)
+            await cart_merge.merge(old_session_id, user.id)
+            await auth_service.logout(old_session_id)
         except Exception:
             logger.exception("Guest cart merge failed")
-    request.state.new_session_id = session_id
+
+    request.state.session_id = session_id
     return user
 
 
@@ -69,7 +78,7 @@ async def logout(
     if not getattr(request.state, "is_authenticated", None):
         raise NotAuthenticatedError()
     await auth_service.logout(getattr(request.state, "session_id"))
-    request.state.clear_session = True
+    delattr(request.state, "session_id")
 
 
 @router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
@@ -81,4 +90,4 @@ async def logout_all(
     if not getattr(request.state, "is_authenticated", None):
         raise NotAuthenticatedError()
     await auth_service.logout_all(current_user)
-    request.state.clear_session = True
+    delattr(request.state, "session_id")

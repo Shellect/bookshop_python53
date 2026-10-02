@@ -30,17 +30,15 @@ class SessionService:
             pipe.expire(key, self.timeout)
             await pipe.execute()
 
-    async def create_session(self, user_id: Optional[uuid.UUID] = None, session_id: Optional[str] = None) -> str:
-        session_id = session_id or str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
-        key = self._session_key(session_id)
+    async def create_session(self, user_id: Optional[uuid.UUID] = None) -> str:
+        session_id = str(uuid.uuid4())
         session_data = json.dumps({
             "user_id": str(user_id) if user_id else None,
-            "created_at": now
+            "created_at": datetime.now(timezone.utc).isoformat()
         })
 
         # Store session in redis with TTL
-        await self.redis.setex(key, self.timeout, session_data)
+        await self.redis.setex(self._session_key(session_id), self.timeout, session_data)
         if user_id:
             # Store user session
             await self._index_user_session(str(user_id), session_id)
@@ -51,8 +49,8 @@ class SessionService:
         key = self._session_key(session_id)
 
         # Load session from redis
-        if raw := await self.redis.get(key):
-            await self.redis.expire(key, self.timeout)
+        # GETEX читает и продлевает TTL одной атомарной командой
+        if raw := await self.redis.getex(key, ex=self.timeout):
             data = json.loads(raw)
             if user_id := data.get("user_id"):
                 await self.redis.expire(self._user_sessions_key(user_id), self.timeout)

@@ -27,21 +27,22 @@ class AuthService:
     def hash_password(self, password) -> str:
         return pwd_context.hash(password)
 
-    async def create_user(self, user_data: UserCreateRequest, current_session_id: Optional[str]) -> Tuple[User, str]:
+    async def create_user(self, user_data: UserCreateRequest) -> Tuple[User, str]:
         # Пароль в базе данных нельзя хранить в открытом виде
         hashed_password = self.hash_password(user_data.password)
         # Новая запись в таблице пользователей
         user = await self.user_service.create(user_data, hashed_password)
-        session_id = await self.session_service.create_session(user.id, current_session_id)
+        # Всегда новый id: гостевой id не становится аутентифицированным (session fixation)
+        session_id = await self.session_service.create_session(user.id)
         return user, session_id
 
-    async def authenticate_user(self, user_data: UserLoginRequest, current_session_id: Optional[str]) -> Tuple[User, str]:
+    async def authenticate_user(self, user_data: UserLoginRequest) -> Tuple[User, str]:
         user = await self.user_service.get_by_name(user_data.login)
         if not user or not user.is_active or not self.verify_password(user_data.password, user.hashed_password):
             raise AuthenticationError()
 
         await self.user_service.update_last_login(user)
-        session_id = await self.session_service.create_session(user.id, current_session_id)
+        session_id = await self.session_service.create_session(user.id)
         return user, session_id
 
     async def logout(self, session_id: Optional[str]) -> None:

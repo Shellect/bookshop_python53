@@ -54,5 +54,4 @@ async def ensure_session_id(
         return session_id
     session_id = await session_service.create_session()
     request.state.session_id = session_id
-    request.state.new_session_id = session_id
     return session_id
