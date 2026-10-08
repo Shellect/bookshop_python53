@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -6,13 +7,19 @@ from typing import List
 from app.core.redis import lifespan
 from app.dependencies.auth import get_active_user
 from app.dependencies.services import get_db
+from app.core.errors import AppError, app_error_handler, validation_handler
 from app.middleware.session_middleware import SessionMiddleware
 from app.models import Book, User
 from app.routers import auth, users, cart
 from app.schemas.book import BookResponse
 
 app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(SessionMiddleware)
+
+app.add_exception_handler(AppError, app_error_handler)
+app.add_exception_handler(RequestValidationError, validation_handler)
+
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(cart.router)

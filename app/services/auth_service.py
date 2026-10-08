@@ -4,7 +4,7 @@ from pwdlib import PasswordHash
 
 from app.models.user import User
 from app.schemas.user import UserCreateRequest, UserLoginRequest
-from app.services.exceptions import AuthenticationError
+from app.core.errors import InvalidCredentialsError
 from .session_service import SessionService
 from .user_service import UserService
 
@@ -39,7 +39,7 @@ class AuthService:
     async def authenticate_user(self, user_data: UserLoginRequest) -> Tuple[User, str]:
         user = await self.user_service.get_by_name(user_data.login)
         if not user or not user.is_active or not self.verify_password(user_data.password, user.hashed_password):
-            raise AuthenticationError()
+            raise InvalidCredentialsError()
 
         await self.user_service.update_last_login(user)
         session_id = await self.session_service.create_session(user.id)

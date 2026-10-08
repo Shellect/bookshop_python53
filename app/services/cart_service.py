@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.models.book import Book
 from app.models.cart import Cart
 from app.schemas.cart import CartItemRequest, CartItemResponse, CartResponse
-from app.services.exceptions import BookNotFoundError
+from app.core.errors import BookNotFoundError
 
 
 class GuestCartService:

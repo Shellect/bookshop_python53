@@ -7,7 +7,7 @@ from uuid import UUID
 
 from app.models.user import User
 from app.schemas.user import UserCreateRequest
-from app.services.exceptions import DuplicateUserError
+from app.core.errors import DuplicateUserError
 
 
 class UserService:

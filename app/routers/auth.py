@@ -2,14 +2,13 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, status
 
+from app.core.errors import AlreadyAuthenticatedError, NotAuthenticatedError
 from app.dependencies.auth import get_current_user
 from app.dependencies.services import get_auth_service, get_cart_merge_service
 from app.models.user import User
 from app.schemas.user import UserCreateRequest, UserLoginRequest, UserResponse
 from app.services import AuthService
 from app.services.cart_service import CartMergeService
-from app.services.exceptions import AlreadyAuthenticatedError, NotAuthenticatedError
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
