@@ -1,16 +1,16 @@
 import {Link, NavLink, useNavigate} from "react-router";
-import {useDispatch, useSelector} from "react-redux";
-import {logout} from "@/slices/authSlice.js";
+import {useSelector} from "react-redux";
+import {useLogoutMutation} from "@/api";
 
 const setActive = ({isActive}) => isActive ? "active nav-link" : "nav-link";
 
 export default function Nav() {
     const {isAuthenticated, user} = useSelector((state) => state.auth);
-    const dispatch = useDispatch();
+    const [logout] = useLogoutMutation();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        await dispatch(logout());
+        await logout();
         navigate('/');
     }
 

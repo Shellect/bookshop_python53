@@ -60,7 +60,10 @@ class BookNotFoundError(AppError):
 
 
 async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content={"error": exc.code, "message": exc.message})
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.code, "message": exc.message, "fields": exc.fields},
+    )
 
 async def validation_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
     fields = {}

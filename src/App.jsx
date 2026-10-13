@@ -1,9 +1,9 @@
 import React from "react";
 import {Route, Routes} from "react-router";
 import {connect} from "react-redux";
-import {BookCard, OrderForm, Nav} from "@/components";
+import {BookCard, OrderForm, Nav, Toaster} from "@/components";
 import {Profile, Registration, BookGallery, Login} from "@/pages";
-import {checkAuth} from "@/slices/authSlice.js";
+import {apiSlice} from "@/api";
 
 class App extends React.Component {
 
@@ -19,13 +19,17 @@ class App extends React.Component {
 
     componentDidMount() {
         this.loadBooks();
-        this.props.dispatch(checkAuth());
+        this.subscription = this.props.dispatch(apiSlice.endpoints.me.initiate());
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.page !== this.props.page) {
             this.loadBooks();
         }
+    }
+
+    componentWillUnmount() {
+        this.subscription?.unsubscribe();
     }
 
     async loadBooks() {
@@ -46,6 +50,7 @@ class App extends React.Component {
         return (
             <>
                 <Nav/>
+                <Toaster/>
                 <div className="container">
                     <div className="row mt-3">
                         <div className="col-12">

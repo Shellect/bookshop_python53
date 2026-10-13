@@ -1,42 +1,38 @@
 import {Link, useNavigate} from "react-router";
 import {useState} from "react";
-import {useDispatch} from "react-redux";
-import {login} from "@/slices/authSlice.js";
-
-const emptyErrors = () => ({login: "", password: "", form: ""});
+import {useLoginMutation} from "@/api";
 
 export const Login = () => {
     const [loginField, setLogin] = useState('');
     const [passwordField, setPassword] = useState('');
-    const [errors, setErrors] = useState(emptyErrors());
+    const [errors, setErrors] = useState({login: '', password: ''});
 
-    const dispatch = useDispatch();
+    const [login] = useLoginMutation();
     const navigate = useNavigate();
 
     const handleSubmit = async e => {
         e.preventDefault();
 
-        const isLoginError = loginField.length === 0;
-        const isPasswordError = passwordField.length === 0;
+        const isLoginError = loginField.length === 0 ? 'Login field is empty' : '';
+        const isPasswordError = passwordField.length === 0 ? 'Password field is empty' : '';
         if (isLoginError || isPasswordError) {
             setErrors({
-                login: isLoginError ? 'Login field is empty' : '',
-                password: isPasswordError ? 'Password field is empty' : '',
-                form: '',
+                login: isLoginError,
+                password: isPasswordError
             })
             return;
         }
-        setErrors(emptyErrors());
         try {
-            const user = await dispatch(login({login: loginField, password: passwordField})).unwrap();
+            const user = await login({login: loginField, password: passwordField}).unwrap();
             if (user.username === loginField) {
                 navigate('/profile');
             }
         } catch (error) {
+            const fields = error.data?.fields ?? {};
+            const message = error.data?.message ?? '';
             setErrors({
-                login: error?.fields?.login ?? '',
-                password: error?.fields?.password ?? '',
-                form: error?.form ?? '',
+                login: fields.login ?? message,
+                password: fields.password ?? '',
             });
         }
     }
@@ -45,7 +41,6 @@ export const Login = () => {
         <form onSubmit={handleSubmit}
               className="mt-3 p-3 rounded bg-body-tertiary shadow col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
             <h2 className="text-center mb-3">Login</h2>
-            {errors.form && <div className="alert alert-danger">{errors.form}</div>}
             <div className="row mb-3">
                 <div className="col-2"><label htmlFor="login"><span className="form-label">Login:</span></label></div>
                 <div className="col-10">
