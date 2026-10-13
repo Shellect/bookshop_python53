@@ -38,9 +38,8 @@ export const Registration = () => {
             }
         } catch (error) {
             const fields = error.data?.fields ?? {};
-            const message = error.data?.message ?? '';
             setErrors({
-                login: fields.login ?? message,
+                login: fields.login ?? '',
                 email: fields.email ?? '',
                 password: fields.password ?? fields.form ?? '',
             });

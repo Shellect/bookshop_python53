@@ -29,9 +29,8 @@ export const Login = () => {
             }
         } catch (error) {
             const fields = error.data?.fields ?? {};
-            const message = error.data?.message ?? '';
             setErrors({
-                login: fields.login ?? message,
+                login: fields.login ?? '',
                 password: fields.password ?? '',
             });
         }
