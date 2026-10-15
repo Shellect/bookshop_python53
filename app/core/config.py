@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # Session
     session_cookie_name: str = "session_id"
     session_ttl_seconds: int = 86400
-    cart_user_ttl_seconds: int = 86400 * 30
+    cart_ttl: int = 86400 * 30
 
     # Database
     postgres_host: str

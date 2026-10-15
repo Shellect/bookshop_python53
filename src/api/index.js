@@ -3,34 +3,34 @@ import {showToast} from "@/slices/toastSlice";
 
 const rawBaseQuery = fetchBaseQuery({baseUrl: "/api", timeout: 15_000});
 
-const requestUrl = (args) => (typeof args === "string" ? args : args.url);
-
-const notify = (error, dispatch) => {
-    const {status, data} = error;
-    if (status === "FETCH_ERROR") {
-        dispatch(showToast("danger", "The server is unavailable. Please try again later."));
-        return;
-    }
-    if (status === "TIMEOUT_ERROR") {
-        dispatch(showToast("danger", "The request timed out. Please try again."));
-        return;
-    }
-    dispatch(showToast("danger", data?.message ?? "Request failed. Please try again."));
-};
-
 const baseQuery = async (args, api, extra) => {
     const result = await rawBaseQuery(args, api, extra);
     if (!result.error) {
         return result;
     }
+
+    const {status, data} = result.error;
+
     // Для гостя 401 на /auth/me — штатная ситуация
-    if (result.error.status === 401 && requestUrl(args) === "/auth/me") {
+    if (status === 401 && args === "/auth/me") {
         return result;
     }
-    const fields = result.error.data?.fields ?? {};
-    if (Object.keys(fields).length === 0) {
-        notify(result.error, api.dispatch);
+
+    // Ошибки валидации показываем в самой форме
+    if (data?.error === "REQUEST_VALIDATION_ERROR") {
+        return result;
     }
+
+    let message;
+    if (status === "FETCH_ERROR") {
+        message = "The server is unavailable. Please try again later.";
+    } else if (status === "TIMEOUT_ERROR") {
+        message = "The request timed out. Please try again.";
+    } else {
+        message = data?.message ?? "Request failed. Please try again.";
+    }
+    api.dispatch(showToast("danger", message));
+
     return result;
 };
 
